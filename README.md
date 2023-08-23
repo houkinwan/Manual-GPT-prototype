@@ -43,6 +43,6 @@ This is a Python script that implements a chatbot capable of providing technical
 
 ## Contributors
 
-- [Your Name](https://github.com/houkinwan)
+- [Hou Kin Wan](https://github.com/houkinwan)
 
 Feel free to contribute and improve the chatbot's functionality!

@@ -19,9 +19,9 @@ This is a Python script that implements a chatbot capable of providing technical
 ## Usage
 
 1. Clone the repository and navigate to the project directory.
-2. Install the required libraries using `pip install numpy pandas PyPDF2 tqdm openai`.
-3. Replace `Enter API key:` in the script with your OpenAI API key.
-4. Run the script using `python your_script_name.py`.
+2. In an anaconda environment, and run `pip install -r "requirements.txt"`
+3. Enter your OpenAI API key (No payment attached may slow performance).
+4. Run the script using `python prototype.py`.
 
 ## Commands
 

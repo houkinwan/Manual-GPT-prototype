@@ -39,7 +39,6 @@ This is a Python script that implements a chatbot capable of providing technical
 
 - The script might require administrative access for reading and writing files.
 - Ensure you have the necessary permissions for the script directory.
-- Make sure to handle errors and provide correct inputs.
 - The script uses OpenAI's GPT-3.5 model, and you need a valid API key.
 
 ## Contributors

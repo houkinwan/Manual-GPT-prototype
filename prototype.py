@@ -14,12 +14,18 @@ import sys
 warnings.filterwarnings('ignore')
 from openai.embeddings_utils import get_embedding
 from IPython.display import clear_output
+from tenacity import AsyncRetrying, RetryError, stop_after_attempt
 
 os.system('cls' if os.name == 'nt' else 'clear')
-openai.api_key = input("Enter API key:")
+print("Welcome to the Technical Support Chatbot")
+openai.api_key = input("Please enter your OpenAI API key:")
 os.system('cls' if os.name == 'nt' else 'clear')
 
 MAX_TOKENS = 16385
+
+guide = 'Key in "new" to start a new context session \nKey in "exit" to end the chatbot \nKey in "manuals" to display all available manual \nKey in "load pdfs" to load new pdfs or "load pdfs reset" to reset the database (costly) and load \nKey in "delete" to delete pdfs \nKey in "similarity" to set k-nearest parameters \nKey in "details" to toggle details \nKey in "breadth" to set page search breadth'
+
+
 
 # Known Issues
 ### wrong api key lets you through, but will error when you use the chatbot
@@ -38,11 +44,23 @@ MAX_TOKENS = 16385
 ### error handling
 ### other types of text files for FAQs (.txt)
 ### reformat how it partitions chunks of text into more uniform and predictable ways
+### add more user friendly aspects
 
 
 def embed(x):
     '''embed with openai'''
-    return get_embedding(x, engine="text-embedding-ada-002")
+    
+    try:
+        return get_embedding(x, engine="text-embedding-ada-002")
+    except RetryError as e:
+        os.system('cls' if os.name == 'nt' else 'clear')
+        openai.api_key = input("It seems like something is wrong with OpenAI. \nMake sure your internet is connected and please reenter your API key: ")
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print(guide)
+        
+        return embed(x)
+    
+
 
 def reset_data():
     '''clear all data from directories and json history'''
@@ -252,7 +270,6 @@ def chatbot(premise = "You’re a technical support bot that has access to manua
             details = False,
             breadth = 1):
     '''Start of the chatbot. Able to modify the premise or prompt'''
-    guide = 'Key in "new" to start a new context session \nKey in "exit" to end the chatbot \nKey in "manuals" to display all available manual \nKey in "load pdfs" to load new pdfs or "load pdfs reset" to reset the database (costly) and load \nKey in "delete" to delete pdfs \nKey in "similarity" to set k-nearest parameters \nKey in "details" to toggle details \nKey in "breadth" to set page search breadth'
     messages=[
     {"role": "system", "content": premise}
       ]
@@ -261,16 +278,23 @@ def chatbot(premise = "You’re a technical support bot that has access to manua
     print(guide)
     def conversation(response):
         '''The openai api responses'''
+
+
         if len(messages) == 1:
             messages[0]["content"] += get_suitable_text(response,k_pages=k_pages,k_docs=k_docs,details=details, breadth=breadth)
         response_list.append(response)
         content = "Question: " + response + prompt_mod
         messages.append({"role": "user", "content": content})
         
-        completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo-16k-0613",
-        messages=messages,
-        )
+        try:
+            completion = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo-16k-0613",
+            messages=messages,
+            )
+        except RetryError as e:
+            openai.api_key = input("It seems like somethings wrong with OpenAI. \nReenter your API key: ")
+            return False
+            
         message = completion["choices"][0]["message"]
         chat_response = completion.choices[0].message.content
         token_usage = completion.usage.total_tokens
@@ -408,6 +432,9 @@ def chatbot(premise = "You’re a technical support bot that has access to manua
             print(guide)
         else:
             cur_conv = conversation(cur_msg)
+            if cur_conv == False:
+                messages = [{"role": "system", "content": premise}]
+                continue
             print("\nChatGPT:\n" + cur_conv[0][-1]["content"])
             print("\n")
             print(f"tokens used: {cur_conv[1]}/{MAX_TOKENS}\n")
@@ -416,7 +443,9 @@ def chatbot(premise = "You’re a technical support bot that has access to manua
        
             
 def main():
+    
     os.system('cls' if os.name == 'nt' else 'clear')
+    
     chatbot(details=False,k_pages=10,k_docs=10,breadth=1)
 
 if __name__ == "__main__":

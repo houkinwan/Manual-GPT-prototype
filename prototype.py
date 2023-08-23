@@ -16,6 +16,10 @@ from openai.embeddings_utils import get_embedding
 from IPython.display import clear_output
 from tenacity import AsyncRetrying, RetryError, stop_after_attempt
 
+
+
+    
+
 os.system('cls' if os.name == 'nt' else 'clear')
 print("Welcome to the Technical Support Chatbot")
 openai.api_key = input("Please enter your OpenAI API key:")
@@ -45,8 +49,23 @@ guide = 'Key in "new" to start a new context session \nKey in "exit" to end the 
 ### other types of text files for FAQs (.txt)
 ### reformat how it partitions chunks of text into more uniform and predictable ways
 ### add more user friendly aspects
-
-
+def sanity_check():
+    #database check
+    with open(f"data_json.json", 'r') as openfile:
+        data_json = json.load(openfile)
+    if not (len(data_json["stored_pdfs"]) == pd.read_pickle("vectors/manual_vectors.csv").shape[0]):
+        print("Data incompatibility detected, please do not interact with files directly including deleting folders and csv files. Reset recommended.")
+        if input("Reset? (Y/N):").lower() == "y":
+            reset_data()
+        else:
+            print("Exiting")
+            exit()
+        
+        
+    #dependency check
+    
+    
+    
 def embed(x):
     '''embed with openai'''
     
@@ -445,7 +464,7 @@ def chatbot(premise = "You’re a technical support bot that has access to manua
 def main():
     
     os.system('cls' if os.name == 'nt' else 'clear')
-    
+    sanity_check()
     chatbot(details=False,k_pages=10,k_docs=10,breadth=1)
 
 if __name__ == "__main__":
